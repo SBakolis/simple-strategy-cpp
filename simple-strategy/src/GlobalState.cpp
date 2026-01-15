@@ -2,10 +2,13 @@
 #include <graphics.h>
 #include <queue>
 #include <algorithm>
+#include <unordered_set>
 
 static constexpr float SEND_INTERVAL = 1.0f;
+const float WINDOW_W = 1200.0f;
 
 void GlobalState::init() {
+
     float startX = 150;
     float gapY = 100;
     float gapX = 120;
@@ -15,26 +18,87 @@ void GlobalState::init() {
     // Player side
     for (int layer = 0; layer < LAYERS; ++layer) {
         for (int i = 0; i <= layer; ++i) {
-            nodes.push_back(new Node(
+            Node* n = new Node(
                 startX + layer * gapX,
                 200 + i * gapY,
                 layer,
                 Owner::Player
-            ));
+            );
+            nodes.push_back(n);
+
+            if (layer == 0 && i == 0) playerBase = n;
         }
     }
 
-    // Enemy side (mirrored)
+    // Enemy side
     for (int layer = 0; layer < LAYERS; ++layer) {
         for (int i = 0; i <= layer; ++i) {
-            nodes.push_back(new Node(
-                800 - layer * gapX,
+            Node* n = new Node(
+                WINDOW_W - startX - layer * gapX,
                 200 + i * gapY,
                 layer,
                 Owner::Enemy
-            ));
+            );
+            nodes.push_back(n);
+
+            if (layer == 0 && i == 0) enemyBase = n;
         }
     }
+}
+
+bool GlobalState::edgeExists(Node* from, Node* to) const {
+    if (!from || !to) return false;
+    for (Node* n : from->edges)
+        if (n == to) return true;
+    return false;
+}
+
+// Node has an active chain to base = reachable from playerBase through directed edges
+bool GlobalState::hasChainToPlayerBase(Node* n) const {
+    if (!playerBase || !n) return false;
+    if (n == playerBase) return true;
+
+    std::queue<Node*> q;
+    std::unordered_set<Node*> visited;
+
+    q.push(playerBase);
+    visited.insert(playerBase);
+
+    while (!q.empty()) {
+        Node* cur = q.front();
+        q.pop();
+
+        for (Node* nxt : cur->edges) {
+            if (!nxt) continue;
+            if (visited.count(nxt)) continue;
+
+            visited.insert(nxt);
+            if (nxt == n) return true;
+
+            q.push(nxt);
+        }
+    }
+    return false;
+}
+
+bool GlobalState::canCreateEdge(Node* from, Node* to) const {
+    if (!from || !to) return false;
+    if (from == to) return false;
+
+    if (from->owner != Owner::Player) return false;
+    if (to->owner   != Owner::Player) return false;
+
+    // Must have active connection path
+    if (!hasChainToPlayerBase(from)) return false;
+
+    // Only same level or next level
+    if (!(to->layer == from->layer || to->layer == from->layer + 1))
+        return false;
+
+    // Prevent duplicates
+    if (edgeExists(from, to)) return false;
+
+    return true;
 }
 
 Node* GlobalState::pickNode(float x, float y) {
@@ -78,13 +142,14 @@ void GlobalState::handleInput()
 
         if (!selectedNode)
         {
-            selectedNode = clicked;
-        }
-        else
-        {
+            if (clicked && clicked->owner == Owner::Player && hasChainToPlayerBase(clicked)) {
+                selectedNode = clicked;
+            } else {
+                selectedNode = nullptr;
+            }
+        } else {
             if (clicked && clicked != selectedNode)
             {
-                // Create a directed edge
                 selectedNode->edges.push_back(clicked);
             }
             selectedNode = nullptr;
@@ -96,11 +161,9 @@ void GlobalState::update(float dt) {
     dt *= 0.001f;
     handleInput();
 
-    // Update nodes (production happens here now)
     for (Node* n : nodes) {
         n->update(dt);
 
-        // Units move ONLY if connected; send rate-limited
         if (n->isConnected() && n->unitCount > 0) {
             float& t = sendTimers[n];
             t += dt;
@@ -115,12 +178,10 @@ void GlobalState::update(float dt) {
                 n->unitCount--;
             }
         } else {
-            // if not connected, keep timer reset (optional)
             sendTimers[n] = 0.0f;
         }
     }
 
-    // Update units + resolve arrivals
     for (auto it = units.begin(); it != units.end();) {
         Unit* u = *it;
         u->update(dt);

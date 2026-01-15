@@ -11,6 +11,9 @@ public:
 
     Node* selectedNode = nullptr;
 
+    Node* playerBase = nullptr;
+    Node* enemyBase  = nullptr;
+
     std::unordered_map<Node*, float> sendTimers;
 
     void init();
@@ -19,5 +22,10 @@ public:
 
     void handleInput();
     Node* pickNode(float x, float y);
+
     Node* chooseTarget(Node* source);
+
+    bool hasChainToPlayerBase(Node* n) const;
+    bool canCreateEdge(Node* from, Node* to) const;
+    bool edgeExists(Node* from, Node* to) const;
 };
