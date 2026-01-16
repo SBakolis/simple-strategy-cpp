@@ -6,6 +6,8 @@
 
 class GlobalState {
 public:
+    ~GlobalState();
+
     std::vector<Node*> nodes;
     std::vector<Unit*> units;
 
@@ -24,7 +26,7 @@ public:
     void draw();
 
     void handleInput();
-    Node* pickNode(float x, float y);
+    Node* pickNode(float x, float y) const;
 
     Node* chooseTarget(Node* source);
 

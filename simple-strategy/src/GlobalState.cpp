@@ -9,7 +9,25 @@
 static constexpr float SEND_INTERVAL = 1.0f;
 static constexpr float WINDOW_W = 1200.0f;
 
-static std::string g_status = "Click a NODE to select.";
+static std::string statusText = "Click a NODE to select.";
+
+GlobalState::~GlobalState()
+{
+    for (Unit* u : units) {
+        delete u;
+    }
+
+    units.clear();
+
+    for (Node* n : nodes) {
+        delete n;
+    }
+    nodes.clear();
+
+    selectedNode = nullptr;
+    playerBase = nullptr;
+    enemyBase = nullptr;
+}
 
 void GlobalState::init()
 {
@@ -53,7 +71,7 @@ Node* GlobalState::getBase(Owner owner) const
     return (owner == Owner::Player) ? playerBase : enemyBase;
 }
 
-Node* GlobalState::pickNode(float x, float y)
+Node* GlobalState::pickNode(float x, float y) const
 {
     for (Node* n : nodes)
         if (n && n->contains(x, y))
@@ -196,12 +214,12 @@ void GlobalState::handleInput()
         Node* base = getBase(clicked->owner);
         if (clicked == base || hasChainToBase(clicked, clicked->owner)) {
             selectedNode = clicked;
-            g_status = "Node selected. Click another node to connect.";
+            statusText = "Node selected. Click another node to connect.";
         }
     } else {
         if (clicked && canCreateEdge(selectedNode, clicked, selectedNode->owner)) {
             createSharedConnection(selectedNode, clicked);
-            g_status = "Connection created (shared road).";
+            statusText = "Connection created (shared road).";
         }
         selectedNode = nullptr;
     }
@@ -304,7 +322,7 @@ void GlobalState::draw()
 
     graphics::Brush text;
     text.fill_color[0] = text.fill_color[1] = text.fill_color[2] = 1.0f;
-    graphics::drawText(20, 30, 18, g_status, text);
+    graphics::drawText(20, 30, 18, statusText, text);
 
     if (!gameStarted) {
         float panelX = 350.0f;
@@ -382,5 +400,4 @@ void GlobalState::draw()
         text.fill_color[2] = 0.0f;
         graphics::drawText(panelX + 140, panelY + 130, 24, "Press ESC to quit", text);
     }
-
 }
