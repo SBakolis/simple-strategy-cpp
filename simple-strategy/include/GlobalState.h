@@ -28,8 +28,8 @@ public:
 
     Node* chooseTarget(Node* source);
 
-    // Shared-road graph rules
     Node* getBase(Owner owner) const;
+    bool gameStarted = false;
     bool hasChainToBase(Node* n, Owner owner) const;
     bool canCreateEdge(Node* from, Node* to, Owner owner) const;
     bool edgeExistsUndirected(Node* a, Node* b) const;

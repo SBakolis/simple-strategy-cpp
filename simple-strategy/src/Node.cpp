@@ -34,7 +34,6 @@ void Node::update(float dt)
 
 void Node::draw()
 {
-    // ----- draw node -----
     graphics::Brush br;
     br.outline_opacity = 1.0f;
 
@@ -50,7 +49,6 @@ void Node::draw()
 
     graphics::drawDisk(x, y, NODE_RADIUS, br);
 
-    // ----- draw unit count (WHITE text) -----
     graphics::Brush text;
     text.fill_color[0] = 1.0f;
     text.fill_color[1] = 1.0f;
@@ -59,13 +57,11 @@ void Node::draw()
 
     std::string s = std::to_string(unitCount);
 
-    // crude but effective centering
     float textX = x - 4.5f * (float)s.size();
     float textY = y + 6.0f;
 
     graphics::drawText(textX, textY, 16.0f, s, text);
 
-    // ----- draw shared connections -----
     graphics::Brush line;
     line.fill_color[0] = 0.85f;
     line.fill_color[1] = 0.85f;

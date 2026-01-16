@@ -209,11 +209,20 @@ void GlobalState::handleInput()
 
 void GlobalState::update(float dt_ms)
 {
+    if (!gameStarted) {
+        if (graphics::getKeyState(graphics::SCANCODE_RETURN)) {
+            gameStarted = true;
+        }
+
+        return;
+    }
+
     if (gameOver) {
         if (graphics::getKeyState(graphics::SCANCODE_ESCAPE)) {
             graphics::destroyWindow();
             std::exit(0);
         }
+
         return;
     }
 
@@ -296,6 +305,40 @@ void GlobalState::draw()
     graphics::Brush text;
     text.fill_color[0] = text.fill_color[1] = text.fill_color[2] = 1.0f;
     graphics::drawText(20, 30, 18, g_status, text);
+
+    if (!gameStarted) {
+        float panelX = 350.0f;
+        float panelY = 220.0f;
+        float panelW = 500.0f;
+        float panelH = 180.0f;
+
+        graphics::Brush panel;
+        panel.fill_color[0] = 1.0f;
+        panel.fill_color[1] = 1.0f;
+        panel.fill_color[2] = 1.0f;
+        panel.fill_opacity = 1.0f;
+        panel.outline_opacity = 1.0f;
+        panel.outline_color[0] = 0.0f;
+        panel.outline_color[1] = 0.0f;
+        panel.outline_color[2] = 0.0f;
+
+        graphics::drawRect(
+            panelX + panelW * 0.5f,
+            panelY + panelH * 0.5f,
+            panelW,
+            panelH,
+            panel
+        );
+
+        graphics::Brush text;
+        text.fill_color[0] = 0.0f;
+        text.fill_color[1] = 0.0f;
+        text.fill_color[2] = 0.0f;
+
+        graphics::drawText(panelX + 90, panelY + 80, 36, "Press ENTER to start", text);
+
+        return;
+    }
 
     if (gameOver) {
         float panelX = 350.0f;

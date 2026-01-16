@@ -19,7 +19,6 @@ public:
     std::vector<Node*> edges;
     int roundRobinIndex = 0;
 
-    // Produces 1 unit every 0.5 seconds ONLY if connected
     float productionTimer = 0.0f;
 
     Node(float x, float y, int layer, Owner owner);
