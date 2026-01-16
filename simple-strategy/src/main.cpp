@@ -19,7 +19,7 @@ void draw() {
 }
 
 int main() {
-    graphics::createWindow(W, H, "Graph Strategy Game");
+    graphics::createWindow(W, H, "Strategy Nodes");
     graphics::setFont("assets/DejaVuSans.ttf");
 
     game.init();

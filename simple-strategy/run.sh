@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Building graph_game..."
+echo "Building strategy_nodes..."
 
 g++ -std=c++17 \
     src/main.cpp src/GlobalState.cpp src/Node.cpp src/Unit.cpp \
@@ -9,10 +9,10 @@ g++ -std=c++17 \
     -Lsgg/lib -lsgg \
     -lSDL2 -lSDL2_mixer -lGLEW -lfreetype \
     -lGL -lGLU \
-    -o graph_game
+    -o strategy_nodes
 
 echo "Build successful."
-echo "Running graph_game..."
+echo "Running strategy_nodes..."
 echo
 
-./graph_game
+./strategy_nodes
