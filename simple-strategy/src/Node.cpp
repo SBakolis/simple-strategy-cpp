@@ -3,33 +3,38 @@
 #include <cmath>
 #include <string>
 
-static constexpr float NODE_RADIUS = 20.0f;
-static constexpr float PRODUCE_INTERVAL = 0.5f; // 1 unit per 0.5 sec
+static constexpr float NODE_RADIUS = 22.0f;
+static constexpr float PRODUCE_INTERVAL = 3.0f; // seconds per unit
 
 Node::Node(float x, float y, int layer, Owner owner)
     : x(x), y(y), layer(layer), owner(owner)
 {
     unitCount = 0;
     capacity = 50;
+    productionTimer = 0.0f;
+    roundRobinIndex = 0;
 }
 
-void Node::update(float dt) {
-    const bool canProduce = (layer == 0) || isConnected();
-        if (!canProduce)
-            return;
+void Node::update(float dt)
+{
+    // Base always produces, others only if connected
+    bool canProduce = (layer == 0) || !edges.empty();
+    if (!canProduce)
+        return;
 
     productionTimer += dt;
 
     while (productionTimer >= PRODUCE_INTERVAL) {
         productionTimer -= PRODUCE_INTERVAL;
         if (unitCount < capacity) {
-            unitCount += 1;
+            unitCount++;
         }
     }
 }
 
-void Node::draw() {
-    // --- Draw node circle ---
+void Node::draw()
+{
+    // ----- draw node -----
     graphics::Brush br;
     br.outline_opacity = 1.0f;
 
@@ -43,9 +48,9 @@ void Node::draw() {
         br.fill_color[2] = 0.3f;
     }
 
-    graphics::drawDisk(x, y, 20.0f, br);
+    graphics::drawDisk(x, y, NODE_RADIUS, br);
 
-    // --- Draw unit count (WHITE text) ---
+    // ----- draw unit count (WHITE text) -----
     graphics::Brush text;
     text.fill_color[0] = 1.0f;
     text.fill_color[1] = 1.0f;
@@ -55,21 +60,25 @@ void Node::draw() {
     std::string s = std::to_string(unitCount);
 
     // crude but effective centering
-    float textX = x - 4.0f * s.size();
-    float textY = y + 5.0f;
+    float textX = x - 4.5f * (float)s.size();
+    float textY = y + 6.0f;
 
-    graphics::drawText(textX, textY, 14.0f, s, text);
+    graphics::drawText(textX, textY, 16.0f, s, text);
 
-    // --- Draw outgoing edges ---
+    // ----- draw shared connections -----
     graphics::Brush line;
-    line.fill_color[0] = line.fill_color[1] = line.fill_color[2] = 0.9f;
+    line.fill_color[0] = 0.85f;
+    line.fill_color[1] = 0.85f;
+    line.fill_color[2] = 0.85f;
 
     for (Node* n : edges) {
+        if (!n) continue;
         graphics::drawLine(x, y, n->x, n->y, line);
     }
 }
 
-bool Node::contains(float mx, float my) const {
+bool Node::contains(float mx, float my) const
+{
     float dx = mx - x;
     float dy = my - y;
     return (dx * dx + dy * dy) <= (NODE_RADIUS * NODE_RADIUS);

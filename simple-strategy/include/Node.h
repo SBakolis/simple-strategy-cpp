@@ -29,4 +29,5 @@ public:
 
     bool contains(float mx, float my) const;
     bool isConnected() const { return !edges.empty(); }
+    int sendPhase = 0; // 0: forward, 1: same level
 };

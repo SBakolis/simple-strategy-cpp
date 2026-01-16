@@ -14,10 +14,13 @@ public:
     Node* playerBase = nullptr;
     Node* enemyBase  = nullptr;
 
+    bool gameOver = false;
+    Owner winner = Owner::Player;
+
     std::unordered_map<Node*, float> sendTimers;
 
     void init();
-    void update(float dt);
+    void update(float dt_ms);
     void draw();
 
     void handleInput();
@@ -25,7 +28,10 @@ public:
 
     Node* chooseTarget(Node* source);
 
-    bool hasChainToPlayerBase(Node* n) const;
-    bool canCreateEdge(Node* from, Node* to) const;
-    bool edgeExists(Node* from, Node* to) const;
+    // Shared-road graph rules
+    Node* getBase(Owner owner) const;
+    bool hasChainToBase(Node* n, Owner owner) const;
+    bool canCreateEdge(Node* from, Node* to, Owner owner) const;
+    bool edgeExistsUndirected(Node* a, Node* b) const;
+    void createSharedConnection(Node* a, Node* b);
 };
